@@ -40,7 +40,7 @@ from tigramite.models import LinearMediation, Prediction
 #          The function inputs are "data", "\tau_{ub}" and "\omega_{ub}". "data" has shape [T,N] where T is the time length and N denotes the N-var time series.
 #          The function output "tem_array" is the estimated edge array with shape [N,\Omega,N,tau_max_pcmci+1] where the explanation of \Omega can be found in paper.
 #          With the same logic in tigramite package, if the target variable has index j, then the incoming edge array is [N,\Omega,j,tau_max_pcmci+1].
-#          The function output "omega_hat4" is the estimated periodicity array for each time series.
+#          The function output "omega_hat4" is the estimated periodicity array for data.
 #          The function output "superset_bool" is the super set of parents set obtained from PCMCI, denoted by "\widehat{SPA}" in paper.
 #       2. This code is based on tigramite package version v5.1.0. Updates for a newer version of the tigramite package will be available at a later time.
 
