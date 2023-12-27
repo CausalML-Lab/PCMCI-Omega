@@ -132,7 +132,7 @@ def visualization(N,data):
 #          The function inputs are "data", "\tau_{ub}" and "\omega_{ub}". "data" has shape [T,N] where T is the time length and N denotes the N-var time series.
 #          The function output "tem_array" is the estimated edge array with shape [N,\Omega,N,tau_max_pcmci+1] where the explanation of \Omega can be found in paper.
 #          With the same logic in tigramite package, if the target variable has index j, then the incoming edge array is [N,\Omega,j,tau_max_pcmci+1].
-#          The function output "omega_hat4" is the estimated periodicity array for each time series.
+#          The function output "omega_hat4" is the estimated periodicity array for data.
 #          The function output "superset_bool" is the estimated super set of parents set obtained from PCMCI, denoted by "\hat{SPA}" in paper.
 #       2. function "algorithm_v2_mci_withoutturningpoint" is the main function of PCMCI_Omega without "turning point" strategy.
 #       3. function "PCMCI_omegaV2_results" is the evaluation function for PCMCI_Omega, hence data information is needed.
