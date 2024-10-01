@@ -647,4 +647,4 @@ results_frame=pd.DataFrame.transpose(pd.DataFrame(results_all))
 results_frame.columns =['T','N','tau_max','OMEGA','omega_hat','sum_true_edge','Omega_max','time_pcmci_omega', 'precision_pcmci_omega', 'recall_pcmci_omega', 'F1_score_pcmci_omega','accurate_rate_pcmci_omega','precision_pcmci','recall_pcmci','F1_score_pcmci']
 head_str='T,N,tau_max,OMEGA,omega_hat,sum_true_edge,Omega_max,time_pcmci_omega,precision_pcmci_omega, recall_pcmci_omega, F1_score_pcmci_omega,accurate_rate_pcmci_omega,precision_pcmci,recall_pcmci,F1_score_pcmci'
 # '%s %s %.18e %.18e %.18e %.18e %.18e %.18e %.18e %.18e'
-np.savetxt('discrete_results_4'+'_omega'+str(Omega_bound)+'T'+str(T)+'N'+str(N)+'tau_max'+str(tau_max)+'.csv',results_frame, delimiter=',',header=head_str,fmt='%s')
+np.savetxt('discrete_results'+'_omega'+str(Omega_bound)+'T'+str(T)+'N'+str(N)+'tau_max'+str(tau_max)+'.csv',results_frame, delimiter=',',header=head_str,fmt='%s')
