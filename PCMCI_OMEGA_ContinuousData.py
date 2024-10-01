@@ -28,9 +28,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from numpy import nan
 from math import isnan
 from copy import deepcopy
-# import os
+import os
 # os. getcwd() 
-# os.chdir('/home/gao565/CD_in_TS/simulated_result_all5')
+os.chdir('/home/gao565/PCMCI_OMEGA_github')
 # print("work?")
 ################################################Data Simulations#####################################
 def data_generate(T,N,Omega_bound,tau_max,tau_bound,complexity):
@@ -132,7 +132,7 @@ def visualization(N,data):
 #          The function inputs are "data", "\tau_{ub}" and "\omega_{ub}". "data" has shape [T,N] where T is the time length and N denotes the N-var time series.
 #          The function output "tem_array" is the estimated edge array with shape [N,\Omega,N,tau_max_pcmci+1] where the explanation of \Omega can be found in paper.
 #          With the same logic in tigramite package, if the target variable has index j, then the incoming edge array is [N,\Omega,j,tau_max_pcmci+1].
-#          The function output "omega_hat4" is the estimated periodicity array for data.
+#          The function output "omega_hat4" is the estimated periodicity array for each time series.
 #          The function output "superset_bool" is the estimated super set of parents set obtained from PCMCI, denoted by "\hat{SPA}" in paper.
 #       2. function "algorithm_v2_mci_withoutturningpoint" is the main function of PCMCI_Omega without "turning point" strategy.
 #       3. function "PCMCI_omegaV2_results" is the evaluation function for PCMCI_Omega, hence data information is needed.
@@ -182,8 +182,21 @@ def est_summary_casaul_graph(ar,icml_of_true_and_est,omega,N):
 
 #tau_max_pcmci = "\tau_{ub}" in the paper
 #search_omega_bound = "\omega_{ub}" in the paper
-def algorithm_v2_mci_(data,tau_max_pcmci,search_omega_bound):
+def algorithm_v2_mci_(data,T,N,tau_max_pcmci,search_omega_bound):
   st = time.time()
+  mask_all=np.empty(shape=(search_omega_bound,search_omega_bound,T,N))
+  mask_all=mask_all+3 # The "+3" is a precaution in case there's an issue with generation, which would otherwise cause an error.
+
+  for i in range(1, search_omega_bound+1):
+    for j in range(0,i):
+      a = [ [1]*N for i in range(T)]
+      a =np.array(a,dtype=float)
+      U = range(T)
+      for t in range(N,T):
+        if U[t]%i==j:
+          a[t,:]=0
+      mask_all[i-1][j]=a
+
   results_variable=np.zeros(shape=(N,search_omega_bound,search_omega_bound))
   results_variable[:][:][:] = nan
   num_edge1=np.zeros(shape=(N,search_omega_bound))
@@ -312,8 +325,20 @@ def algorithm_v2_mci_(data,tau_max_pcmci,search_omega_bound):
   return tem_array, omega_hat4, superset_bool, elapsed_time
 
 
-def algorithm_v2_mci_withoutturningpoint(data,tau_max_pcmci,search_omega_bound):
+def algorithm_v2_mci_withoutturningpoint(data,T,N,tau_max_pcmci,search_omega_bound):
   st = time.time()
+  mask_all=np.empty(shape=(search_omega_bound,search_omega_bound,T,N))
+  mask_all=mask_all+3
+  for i in range(1, search_omega_bound+1):
+    for j in range(0,i):
+      a = [ [1]*N for i in range(T)]
+      a =np.array(a,dtype=float)
+      U = range(T)
+      for t in range(N,T):
+        if U[t]%i==j:
+          a[t,:]=0
+      mask_all[i-1][j]=a
+
   results_variable=np.zeros(shape=(N,search_omega_bound,search_omega_bound))
   results_variable[:][:][:] = nan
   num_edge1=np.zeros(shape=(N,search_omega_bound))
@@ -423,7 +448,7 @@ def algorithm_v2_mci_withoutturningpoint(data,tau_max_pcmci,search_omega_bound):
   return tem_array, omega_hat4, superset_bool, elapsed_time
 # print('Execution time:', elapsed_time, 'seconds')
 
-#@title PCMCI_omegaV2 results （summary_graph, correct)
+# PCMCI_omegaV2 results （summary_graph, correct)
 def PCMCI_omegaV2_results(omega_hat4,tem_array,Omega,true_edge_array,tau_max_pcmci):
   print(omega_hat4)
   print(Omega)
@@ -449,7 +474,7 @@ def PCMCI_omegaV2_results(omega_hat4,tem_array,Omega,true_edge_array,tau_max_pcm
   return precision,recall,F1_score, accurate_rate
 
 
-#@title PCMCI results （summary_graph, correct)
+# PCMCI results （summary_graph, correct)
 def PCMCI_result(superset_bool,Omega,true_edge_array,tau_max_pcmci):
   PCMCI_result = np.zeros(shape=(N,N,tau_max_pcmci+1))
   tem_array2=deepcopy(superset_bool)
@@ -485,3 +510,70 @@ def PCMCI_result(superset_bool,Omega,true_edge_array,tau_max_pcmci):
   # print("True_Positive={}".format(True_Positive))
   return precision,recall,F1_score
 # print(False_Negative)
+
+
+
+##################### Setting ######################
+tau_max=5
+search_omega_bound=10
+# search_tau_bound=20
+tau_bound = tau_max # assuming we know the true tau_max
+tau_max_pcmci=tau_max # assuming we know the true tau_max
+N=5
+complexity=0.2/N
+T=1000
+Omega_bound=5 
+
+#################### Run Experiment ################
+while True:
+  try:
+      data_result=data_generate_update(T=T,N=N,Omega_bound=Omega_bound,tau_max=tau_max,tau_bound=tau_bound,complexity=complexity)
+      data=deepcopy(data_result[0])
+      Omega=data_result[1]
+      true_edge_array=data_result[2]
+      true_edge_coef=data_result[3]
+      sigma=data_result[4]
+      mu=data_result[5]
+      algorithm_v2_mci_results=algorithm_v2_mci_(data,T,N,tau_max_pcmci,search_omega_bound)
+      # algorithm_v2_mci_results=algorithm_v2_mci_withoutturningpoint(data,T,N,tau_max_pcmci,search_omega_bound)
+      print("pcmciomega done")
+  except:
+      print("Algorithm not works for this dataset")
+      continue
+  else:
+      break
+tem_array=algorithm_v2_mci_results[0]
+omega_hat4=algorithm_v2_mci_results[1]
+superset_bool=algorithm_v2_mci_results[2]
+times=np.array(algorithm_v2_mci_results[3],dtype=object)
+
+time_pcmci_omega=times
+PCMCI_omegaV2=PCMCI_omegaV2_results(omega_hat4=omega_hat4,tem_array=tem_array,Omega=Omega,true_edge_array=true_edge_array,tau_max_pcmci=tau_max_pcmci)
+PCMCI_results=PCMCI_result(superset_bool=superset_bool,Omega=Omega,true_edge_array=true_edge_array,tau_max_pcmci=tau_max_pcmci)
+Omega_max=np.max(Omega)
+sum_true_edge=sum(true_edge_array)
+
+precision_pcmci_omega=PCMCI_omegaV2[0]
+recall_pcmci_omega=PCMCI_omegaV2[1]
+F1_score_pcmci_omega=PCMCI_omegaV2[2]
+accurate_rate_pcmci_omega=PCMCI_omegaV2[3]
+
+precision_pcmci=PCMCI_results[0]
+recall_pcmci=PCMCI_results[1]
+F1_score_pcmci=PCMCI_results[2]
+
+
+Omega_str=np.array(Omega,dtype=str)
+OMEGA=';'.join(Omega_str)
+omega_hat4_str=np.array(omega_hat4,dtype=str)
+omega_hat=';'.join(omega_hat4_str)
+T_index=T
+N_index=N
+tau_index=tau_max
+
+results_all=np.array([T_index,N_index,tau_index,OMEGA,omega_hat,sum_true_edge,Omega_max,time_pcmci_omega,precision_pcmci_omega,recall_pcmci_omega,F1_score_pcmci_omega,accurate_rate_pcmci_omega,precision_pcmci,recall_pcmci,F1_score_pcmci])
+results_frame=pd.DataFrame.transpose(pd.DataFrame(results_all))
+results_frame.columns =['T','N','tau_max','OMEGA','omega_hat','sum_true_edge','Omega_max','time_pcmci_omega', 'precision_pcmci_omega', 'recall_pcmci_omega', 'F1_score_pcmci_omega','accurate_rate_pcmci_omega','precision_pcmci','recall_pcmci','F1_score_pcmci']
+head_str='T,N,tau_max,OMEGA,omega_hat,sum_true_edge,Omega_max,time_pcmci_omega,precision_pcmci_omega, recall_pcmci_omega, F1_score_pcmci_omega,accurate_rate_pcmci_omega,precision_pcmci,recall_pcmci,F1_score_pcmci'
+# '%s %s %.18e %.18e %.18e %.18e %.18e %.18e %.18e %.18e'
+np.savetxt('conti_results'+'_omega'+str(Omega_bound)+'T'+str(T)+'N'+str(N)+'tau_max'+str(tau_max)+'.csv',results_frame, delimiter=',',header=head_str,fmt='%s')
