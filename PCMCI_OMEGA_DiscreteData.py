@@ -521,6 +521,10 @@ def algorithm_v2_mci_withoutturningpoint(data,T,N,tau_max_pcmci,search_omega_bou
       tem_array[k][j]=results['p_matrix'][:,k,:]<0.01
       tem_array[k][j]=np.asmatrix(tem_array[k][j])
 # print('Execution time:', elapsed_time, 'seconds')
+  et = time.time()
+  # get the execution time
+  elapsed_time = et - st
+  return tem_array, omega_hat4, superset_bool, elapsed_time,results_variable
 
 # PCMCI_omegaV2 results （summary_graph, correct)
 def PCMCI_omegaV2_results(omega_hat4,tem_array,Omega,true_edge_array,tau_max_pcmci):
